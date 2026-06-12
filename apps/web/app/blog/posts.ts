@@ -222,7 +222,7 @@ Both share the same database (Postgres via Supabase) and the same auth layer.
 The repo includes a Docker Compose setup that gets you running locally:
 
 \`\`\`bash
-git clone https://github.com/usegate/gate
+git clone https://github.com/doramirdor/gate
 cd gate/docker
 docker compose up
 \`\`\`

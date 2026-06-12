@@ -723,7 +723,7 @@ Auto-approve under $100. Ask above.
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <GhostLink href="https://github.com/usegate/gate">View on GitHub</GhostLink>
+            <GhostLink href="https://github.com/doramirdor/gate">View on GitHub</GhostLink>
             <GhostLink href="/blog">Read the docs</GhostLink>
           </div>
         </section>
@@ -784,7 +784,7 @@ Auto-approve under $100. Ask above.
               <p className="mt-3 text-[13px]" style={{ color: MUTE, lineHeight: 1.5 }}>
                 Built by an ML engineer who runs autonomous agents daily and got
                 tired of hoping they&rsquo;d listen.{" "}
-                <a href="https://github.com/usegate/gate" className="underline" style={{ color: INK }}>
+                <a href="https://github.com/doramirdor/gate" className="underline" style={{ color: INK }}>
                   GitHub
                 </a>
               </p>
