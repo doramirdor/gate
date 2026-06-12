@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     template: `%s · ${BRAND_NAME}`,
   },
   description:
-    "Save your preferences once. Your AI assistants use them and ask for your approval before they spend, send, or do anything you can't undo.",
+    "Gate asks before your AI spends, sends, or does anything it can't undo — then handles the routine stuff, because it already knows your budget and rules.",
   applicationName: BRAND_NAME,
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? `https://${DOMAIN}`),
   keywords: [

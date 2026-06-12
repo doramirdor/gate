@@ -17,7 +17,7 @@ export const DOMAIN = "usegate.dev";
 
 export const SITE_URL = `https://${DOMAIN}`;
 
-export const TAGLINE = "AI acts within your limits. You approve what goes beyond.";
+export const TAGLINE = "One link for every AI that acts for you.";
 
 /** Public profile URL for a handle. */
 export function profileUrl(handle: string): string {
