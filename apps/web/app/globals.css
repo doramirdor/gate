@@ -1,0 +1,253 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design tokens. Dark is the default; light inverts backgrounds and keeps
+   the accents. Security-product calm: no gradients, no glow. */
+:root {
+  --bg: #0a0a0b;
+  --surface: #161618;
+  --surface-2: #1d1d21;
+  --ink: #ededef;
+  --ink-muted: #94949e;
+  --line: #26262b;
+  --accent: #ffb224;
+  --success: #30d158;
+  --danger: #ff453a;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f7f7f8;
+    --surface: #ffffff;
+    --surface-2: #efeff1;
+    --ink: #1b1b1e;
+    --ink-muted: #6c6c75;
+    --line: #e4e4e8;
+    color-scheme: light;
+  }
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--accent);
+  color: #1a1206;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Rendered profile markdown (editor preview + public page). */
+.prose-profile h1 {
+  @apply mb-4 text-2xl font-semibold tracking-tight;
+}
+.prose-profile h2 {
+  @apply mb-2 mt-8 text-sm font-semibold uppercase tracking-widest text-ink-muted;
+}
+.prose-profile h3 {
+  @apply mb-2 mt-4 text-base font-semibold;
+}
+.prose-profile p {
+  @apply mb-3 leading-relaxed;
+}
+.prose-profile ul {
+  @apply mb-3 list-disc space-y-1 pl-5;
+}
+.prose-profile a {
+  @apply underline decoration-ink-muted underline-offset-2 hover:decoration-ink;
+}
+.prose-profile code {
+  @apply rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[0.85em];
+}
+.prose-profile em {
+  @apply text-ink-muted;
+}
+
+/* Landing page (lp-*): light, editorial. Scoped utilities so the dark app
+   chrome is untouched. Motion is quiet and respects reduced-motion. */
+@keyframes lp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lp-rise {
+  opacity: 0;
+  animation: lp-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.lp-press {
+  transition: transform 0.16s cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 0.16s ease, opacity 0.16s ease;
+}
+.lp-press:active {
+  transform: scale(0.97);
+}
+/* Scroll-driven reveal: elements fade-up when they enter the viewport. */
+.lp-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.lp-reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Staggered children inside a reveal. Apply lp-stagger to the parent grid/flex. */
+.lp-stagger > * {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.is-visible .lp-stagger > * {
+  opacity: 1;
+  transform: none;
+}
+.is-visible .lp-stagger > *:nth-child(1) { transition-delay: 0ms; }
+.is-visible .lp-stagger > *:nth-child(2) { transition-delay: 60ms; }
+.is-visible .lp-stagger > *:nth-child(3) { transition-delay: 120ms; }
+.is-visible .lp-stagger > *:nth-child(4) { transition-delay: 180ms; }
+.is-visible .lp-stagger > *:nth-child(5) { transition-delay: 240ms; }
+.is-visible .lp-stagger > *:nth-child(6) { transition-delay: 300ms; }
+.is-visible .lp-stagger > *:nth-child(7) { transition-delay: 360ms; }
+
+/* Card hover: subtle lift for interactive-feeling cards. */
+.lp-card {
+  transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .lp-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+  }
+}
+
+/* FAQ smooth expand/collapse */
+details.lp-faq > summary { list-style: none; }
+details.lp-faq > summary::-webkit-details-marker { display: none; }
+details.lp-faq .lp-faq-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+details.lp-faq[open] .lp-faq-body {
+  grid-template-rows: 1fr;
+}
+details.lp-faq .lp-faq-inner {
+  overflow: hidden;
+}
+details.lp-faq .lp-faq-icon {
+  transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+details.lp-faq[open] .lp-faq-icon {
+  transform: rotate(45deg);
+}
+
+/* Nav link hover */
+.lp-nav {
+  transition: opacity 0.2s ease;
+  opacity: 0.6;
+}
+@media (hover: hover) and (pointer: fine) {
+  .lp-nav:hover {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-rise {
+    animation: none;
+    opacity: 1;
+  }
+  .lp-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .lp-stagger > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---- Editor (ed-*): the context ledger + the transmission preview.
+   Reach is rendered as signal strength; motion only conveys state. ---- */
+@keyframes ed-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.ed-reveal {
+  animation: ed-reveal 0.26s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes ed-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+.ed-live {
+  animation: ed-pulse 2.6s ease-in-out infinite;
+}
+
+/* Signal-strength reach bars grow/dim when the level changes. */
+.ed-bar {
+  transition: height 0.25s cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 0.25s ease, background-color 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ed-reveal {
+    animation: none;
+  }
+  .ed-live {
+    animation: none;
+    opacity: 0.6;
+  }
+  .ed-bar {
+    transition: none;
+  }
+}
+
+/* Light, Apple-clean scope for the public funnel (login, onboarding). Hard-sets
+   the design tokens to the landing palette and the system font, so token-based
+   components (Card, Button, Input, Textarea) render light regardless of the
+   visitor's OS theme. The signed-in app keeps its own default theme. */
+.theme-light {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f5f5f7;
+  --ink: #1d1d1f;
+  --ink-muted: #6e6e73;
+  --line: #e6e6eb;
+  --accent: #f5a623;
+  --success: #1a7f55;
+  --danger: #c0362c;
+  color-scheme: light;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+    "SF Pro Text", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+}
