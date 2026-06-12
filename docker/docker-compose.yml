@@ -1,0 +1,90 @@
+# =============================================================================
+# Gate — self-host stack (v1).
+#
+# Run from the repo root:
+#   cp docker/.env.example docker/.env          # then fill in the values
+#   docker compose -f docker/docker-compose.yml up --build
+#
+# Compose auto-loads docker/.env (the compose file's directory is the project
+# directory) for BOTH build-arg interpolation and the web container's runtime
+# env. No --env-file flag needed.
+#
+# -----------------------------------------------------------------------------
+# WHAT THIS BRINGS UP
+#   web : the Next.js app (apps/web), built from docker/Dockerfile.web.
+#   db  : a plain Postgres 15 as a MINIMAL local stand-in (see the caveat).
+#
+# WHAT THIS DOES *NOT* DO  (read before you rely on it)
+#   Gate needs Supabase, which is more than Postgres: GoTrue (Auth / email
+#   login), PostgREST, and the Deno Edge Runtime that serves the MCP endpoint
+#   (supabase/functions/mcp at /functions/v1/mcp/<handle>). The `db` service
+#   below is ONLY a bare Postgres — somewhere to apply this repo's migrations
+#   and inspect data. It does NOT provide Auth or the MCP endpoint, so against
+#   it alone: sign-in will NOT work and agents CANNOT reach the MCP tools.
+#
+#   For a real instance, run the official Supabase self-host stack and point
+#   the web service at it (NEXT_PUBLIC_SUPABASE_URL + keys in docker/.env):
+#       https://supabase.com/docs/guides/self-hosting/docker
+#   Then apply migrations and serve the function (see docker/README.md):
+#       supabase db push
+#       supabase functions serve mcp --no-verify-jwt
+#
+#   The bundled `db` service is therefore OPTIONAL. If you already point the web
+#   app at a full Supabase instance, you can skip it:
+#       docker compose -f docker/docker-compose.yml up --build web
+# =============================================================================
+
+services:
+  web:
+    build:
+      # Context is the repo root (one level up) so the whole npm workspace is
+      # available to the build. `dockerfile` is resolved relative to context.
+      context: ..
+      dockerfile: docker/Dockerfile.web
+      args:
+        # NEXT_PUBLIC_* are inlined into the browser bundle at BUILD time, so
+        # they are passed as build args. Change one => rebuild:
+        #   docker compose -f docker/docker-compose.yml build web
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+        NEXT_PUBLIC_TELEGRAM_BOT: ${NEXT_PUBLIC_TELEGRAM_BOT}
+    # Runtime env. env_file paths are relative to this compose file, so this is
+    # docker/.env. Server-only secrets (SUPABASE_SERVICE_ROLE_KEY,
+    # ANTHROPIC_API_KEY) are read here at runtime — no rebuild needed to rotate
+    # them. The NEXT_PUBLIC_* values are also present for SSR code paths
+    # (harmless; the client bundle already has the build-time copies baked in).
+    env_file:
+      - .env
+    environment:
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    # NOTE: the web app talks to Supabase over NEXT_PUBLIC_SUPABASE_URL (an HTTP
+    # API gateway), NOT to raw Postgres — so it does not depend_on `db`. The
+    # bundled `db` is just a place to apply migrations during local poking.
+
+  db:
+    # MINIMAL local Postgres — a stand-in only. This is NOT Supabase: no Auth
+    # (GoTrue), no PostgREST, no Edge Runtime, no MCP endpoint. For a working
+    # instance use the official Supabase self-host stack (link in the header).
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      # Host 54322 mirrors supabase/config.toml's local db port for familiarity.
+      - "54322:5432"
+    volumes:
+      - gate-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  gate-db-data:

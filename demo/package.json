@@ -1,0 +1,23 @@
+{
+  "name": "gate-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Remotion interactive-demo: how Gate profiles are created and how agents use them.",
+  "scripts": {
+    "dev": "remotion studio",
+    "render": "remotion render GateDemo out/gate-demo.mp4 --codec=h264",
+    "render:gif": "remotion render GateDemo out/gate-demo.gif --codec=gif --every-nth-frame=2 --scale=0.5",
+    "upgrade": "remotion upgrade"
+  },
+  "dependencies": {
+    "@remotion/google-fonts": "4.0.350",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "remotion": "4.0.350"
+  },
+  "devDependencies": {
+    "@remotion/cli": "4.0.350",
+    "@types/react": "19.0.0",
+    "typescript": "5.5.4"
+  }
+}

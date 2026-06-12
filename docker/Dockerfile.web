@@ -1,0 +1,84 @@
+# syntax=docker/dockerfile:1
+#
+# Gate web tier (apps/web — Next.js 14 App Router) — multi-stage image.
+#
+# The build context MUST be the repo root so the whole npm workspace is present:
+#   root package.json + package-lock.json   (workspace + lockfile)
+#   apps/web                                  (the Next.js app)
+#   lib/                                      (shared brand/profile, imported via externalDir)
+#   scripts/sync-shared.mjs                   (the `npm run sync` mirror step)
+#   supabase/functions/_shared, public/brand  (sync targets)
+#
+# Build directly:
+#   docker build -f docker/Dockerfile.web -t gate-web .
+# Or via the compose stack (preferred), which wires build args + ports for you:
+#   docker compose -f docker/docker-compose.yml up --build
+#
+# Context size: docker/Dockerfile.web.dockerignore (next to this file) is honored
+# by BuildKit and keeps node_modules/.next/.git out of the context. If an older
+# builder ignores it the build still works — `npm ci` and `next build` rebuild
+# those from scratch anyway, it is just slower.
+
+# ---------------------------------------------------------------------------
+# Stage 1: builder — install the whole workspace, sync shared modules, build.
+# ---------------------------------------------------------------------------
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# NEXT_PUBLIC_* values are INLINED into the browser bundle by `next build`, so
+# they must exist at BUILD time — runtime-only env is too late for client code
+# (lib/supabase/client.ts, settings + onboarding pages). docker-compose passes
+# these as build args; changing them later requires a rebuild of this stage.
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_TELEGRAM_BOT
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY \
+    NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
+    NEXT_PUBLIC_TELEGRAM_BOT=$NEXT_PUBLIC_TELEGRAM_BOT \
+    NEXT_TELEMETRY_DISABLED=1
+
+# Whole workspace (context = repo root).
+COPY . .
+
+# Reproducible install of root + apps/web deps from the committed lockfile.
+RUN npm ci
+
+# Mirror lib/* -> supabase/functions/_shared and brand SVGs -> apps/web/public,
+# then build the Next.js app. `npm run sync` is REQUIRED before the build so the
+# @shared/* imports and brand assets resolve.
+RUN npm run sync \
+ && npm --workspace apps/web run build
+
+# ---------------------------------------------------------------------------
+# Stage 2: runner — carry only what `next start` needs.
+# ---------------------------------------------------------------------------
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    PORT=3000
+
+# This app is not built in Next "standalone" output mode, so `next start` needs
+# the build output, the hoisted (root) node_modules, and both package manifests
+# so the `--workspace apps/web` script resolves.
+COPY --from=builder /app/package.json            ./package.json
+COPY --from=builder /app/node_modules            ./node_modules
+COPY --from=builder /app/apps/web/package.json   ./apps/web/package.json
+COPY --from=builder /app/apps/web/next.config.mjs ./apps/web/next.config.mjs
+COPY --from=builder /app/apps/web/public         ./apps/web/public
+# .next is owned by `node` so on-demand revalidation can write to .next/cache.
+COPY --from=builder --chown=node:node /app/apps/web/.next ./apps/web/.next
+
+USER node
+EXPOSE 3000
+
+# Liveness: the landing page ("/") renders without Supabase, so a 200 here means
+# the Next server is up. (It does NOT assert Supabase/Auth connectivity.)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD wget -qO /dev/null http://127.0.0.1:3000/ || exit 1
+
+# Server-only secrets (SUPABASE_SERVICE_ROLE_KEY, ANTHROPIC_API_KEY) are read at
+# runtime and injected by docker-compose — no rebuild needed to change them.
+CMD ["npm", "--workspace", "apps/web", "run", "start"]

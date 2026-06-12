@@ -1,0 +1,18 @@
+{
+  "name": "gate-server",
+  "private": true,
+  "license": "MIT",
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "sync": "node scripts/sync-shared.mjs",
+    "dev": "npm run sync && npm --workspace apps/web run dev",
+    "build": "npm run sync && npm --workspace apps/web run build",
+    "start": "npm --workspace apps/web run start",
+    "test:functions": "deno test supabase/functions/tests/",
+    "test:e2e": "deno run --allow-net --allow-env --allow-read scripts/smoke-e2e.ts",
+    "db:migrate": "supabase db push",
+    "functions:deploy": "npm run sync && supabase functions deploy mcp --no-verify-jwt"
+  }
+}

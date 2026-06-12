@@ -1,0 +1,20 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /absolute/path/to/integrations/claude-code-hook/gate-hook.mjs"
+          }
+        ]
+      }
+    ]
+  },
+  "env": {
+    "GATE_MCP_URL": "https://<project-ref>.supabase.co/functions/v1/mcp/<handle>",
+    "GATE_TOKEN": "<bearer-token-with-approvals-scope>",
+    "GATE_SENSITIVE_PATTERNS": "\\baws\\s+s3\\s+rm\\b,\\bkubectl\\s+delete\\b"
+  }
+}

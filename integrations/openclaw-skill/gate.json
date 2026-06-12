@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "gate": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://<project-ref>.supabase.co/functions/v1/mcp/<handle>",
+        "--header",
+        "Authorization: Bearer <token>"
+      ]
+    }
+  }
+}

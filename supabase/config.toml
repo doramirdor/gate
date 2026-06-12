@@ -1,0 +1,41 @@
+project_id = "gate"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+
+[db]
+port = 54322
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false
+
+# GitHub OAuth: set enabled = true and provide credentials via env to use it.
+[auth.external.github]
+enabled = false
+client_id = "env(SUPABASE_AUTH_GITHUB_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_GITHUB_SECRET)"
+redirect_uri = ""
+
+# Agents authenticate with bearer tokens from the tokens table, not Supabase
+# JWTs — verify_jwt must stay off for the MCP endpoint.
+[functions.mcp]
+verify_jwt = false
+
+# Telegram calls this webhook directly and sends no Supabase JWT — verify_jwt
+# must stay off. Requests are authenticated via the secret-token header
+# (TELEGRAM_WEBHOOK_SECRET) instead.
+[functions.telegram]
+verify_jwt = false

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" role="img" aria-label="Gate mark">
+  <!-- lintel -->
+  <path d="M3.5 5h17" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <!-- posts -->
+  <path d="M6.5 5v15.5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <path d="M17.5 5v15.5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <!-- the human -->
+  <circle cx="12" cy="14" r="2.25" fill="currentColor"/>
+</svg>
