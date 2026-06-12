@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BRAND_NAME, DOMAIN, SITE_URL } from "@shared/brand";
-import { SECTION_HINTS, SECTION_KEYS, SECTION_LABELS } from "@shared/profile";
+import { SECTION_HINTS, SECTION_LABELS } from "@shared/profile";
 import { Logo } from "@/components/Logo";
 import { WaitlistForm } from "./WaitlistForm";
 import { HeroHandleInput } from "./HeroHandleInput";
@@ -50,16 +50,16 @@ function Glyph({
   );
 }
 
-const IconCart = (
+const IconCard = (
   <Glyph>
-    <circle cx="9" cy="20" r="1" />
-    <circle cx="18" cy="20" r="1" />
-    <path d="M3 4h2l2.4 11.4a1 1 0 0 0 1 .8h8.2a1 1 0 0 0 1-.78L20 8H6" />
+    <rect x="2.5" y="5" width="19" height="14" rx="2" />
+    <path d="M2.5 9.5h19" />
   </Glyph>
 );
-const IconPlane = (
+const IconTerminal = (
   <Glyph>
-    <path d="M10.5 13.5 4 15l-1.5-2 5-3-1-5L8 4l3 6 5-3 2 1-5 4 2 7-1.5 1z" />
+    <rect x="2.5" y="4" width="19" height="16" rx="2" />
+    <path d="m6 9 3 3-3 3M12.5 15h4" />
   </Glyph>
 );
 const IconMail = (
@@ -220,39 +220,37 @@ function VRow({
 function UseCaseVisual({ id }: { id: string }) {
   let inner: React.ReactNode = null;
 
-  if (id === "shopping") {
+  if (id === "spending") {
     inner = (
       <div className="flex w-full flex-col">
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: INK }}>
-            <span style={{ color: MUTE }}>{IconCart}</span> Grocery order
+            <span style={{ color: MUTE }}>{IconCard}</span> Subscription renewal
           </span>
-          <Chip bg={GREEN_BG} color={GREEN_TX}>within budget</Chip>
+          <Chip bg={AMBER_BG} color={AMBER_TX}>needs approval</Chip>
         </div>
-        <div className="mt-3 space-y-2">
-          <VRow label="Oat milk ×2" value="$7.80" mono />
-          <VRow label="Bananas" value="$3.20" mono />
-          <VRow label="Olive oil" value="$12.00" mono />
+        <div className="mt-4 text-2xl font-semibold tracking-tight" style={{ color: INK }}>
+          $300.00
         </div>
-        <div className="mt-3 border-t pt-2" style={{ borderColor: LINE }}>
-          <VRow label="Total" value="$23.00" mono strong />
+        <div className="mt-2 text-[13px]" style={{ color: MUTE, fontFamily: MONO }}>
+          Annual plan · over your $100 limit · held
         </div>
       </div>
     );
-  } else if (id === "travel") {
+  } else if (id === "command") {
     inner = (
       <div className="flex w-full flex-col">
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: INK }}>
-            <span style={{ color: MUTE }}>{IconPlane}</span> Flight hold
+            <span style={{ color: MUTE }}>{IconTerminal}</span> Claude Code
           </span>
-          <Chip bg={AMBER_BG} color={AMBER_TX}>awaiting payment</Chip>
+          <Chip bg={AMBER_BG} color={AMBER_TX}>blocked</Chip>
         </div>
-        <div className="mt-4 text-2xl font-semibold tracking-tight" style={{ color: INK }}>
-          TLV <span style={{ color: MUTE }}>to</span> JFK
+        <div className="mt-4 rounded-md px-3 py-2 text-[13px]" style={{ background: INK, color: "#ff8a80", fontFamily: MONO }}>
+          $ rm -rf ./
         </div>
         <div className="mt-2 text-[13px]" style={{ color: MUTE, fontFamily: MONO }}>
-          Departs 11:40 · Seat 14C · 1 carry-on
+          intercepted · waiting for you
         </div>
       </div>
     );
@@ -371,14 +369,14 @@ function InboxMock() {
 
 const USE_CASES = [
   {
-    id: "shopping",
-    title: "Shopping and errands",
-    body: "Your assistant orders groceries and household goods within your budget, and checks with you before anything over your limit.",
+    id: "spending",
+    title: "Spending that needs a look",
+    body: "A $300 subscription renewal, a surprise upgrade, anything over your limit — your assistant stops and waits for your yes before the money moves.",
   },
   {
-    id: "travel",
-    title: "Travel",
-    body: "It finds flights and hotels in your style, then waits for your yes before it pays for anything.",
+    id: "command",
+    title: "Commands that can't be undone",
+    body: "In Claude Code, a destructive command like rm -rf is intercepted and held until you approve — so a bad guess can't wipe your work.",
   },
   {
     id: "inbox",
@@ -415,11 +413,15 @@ const FAQS = [
   },
   {
     q: `How much does ${BRAND_NAME} cost?`,
-    a: "You can start for free.",
+    a: `It's free. ${BRAND_NAME} is open source under the MIT license — self-host it for nothing, or use the hosted version free. There is no paid tier.`,
   },
 ] as const;
 
 const INTEGRATIONS = ["Claude", "ChatGPT", "Claude Code", "Any MCP agent"];
+
+/* The sections worth showing day one. The full model has more (see the editor);
+   the landing page leads with the four that earn their place immediately. */
+const LANDING_SECTIONS = ["scheduling", "budget", "comms", "custom"] as const;
 
 function jsonLd() {
   return {
@@ -501,16 +503,16 @@ export default function LandingPage() {
             className="lp-rise mx-auto mt-6 max-w-2xl"
             style={{ color: MUTE, fontSize: "clamp(1.05rem, 1.6vw, 1.3rem)", lineHeight: 1.55, animationDelay: "120ms" }}
           >
-            Your preferences, your budget, your rules - saved once,
-            read by every assistant you use. It handles the small stuff
-            and asks before anything it can't undo.
+            It asks before your AI spends, sends, or does anything it can't
+            undo - and handles the routine stuff on its own, because it already
+            knows your budget, your rules, and how you work.
           </p>
 
           <div className="lp-rise mt-9" style={{ animationDelay: "180ms" }}>
             <HeroHandleInput />
           </div>
           <p className="lp-rise mt-3 text-sm" style={{ color: MUTE, animationDelay: "220ms" }}>
-            Free forever · 2-minute setup · Works with Claude, ChatGPT, and any MCP agent
+            Free forever · Open source (MIT) · Self-hostable · Works with Claude, ChatGPT, and any MCP agent
           </p>
 
           {/* Product visual — animated walkthrough (see HeroDemo) */}
@@ -532,6 +534,26 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* The argument — placed high; it is the whole thesis */}
+        <Reveal>
+        <section className="py-20 sm:py-24">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="mx-auto mb-5 max-w-xl text-[15px]" style={{ color: MUTE, lineHeight: 1.6, fontStyle: "italic" }}>
+              An AI was told to confirm before acting. It deleted hundreds of emails anyway.
+            </p>
+            <h2 className="font-semibold" style={{ fontSize: "clamp(1.9rem, 4vw, 3rem)", letterSpacing: "-0.025em", lineHeight: 1.08 }}>
+              A prompt can be ignored. A permission check cannot.
+            </h2>
+            <p className="mx-auto mt-6 max-w-xl text-[17px]" style={{ color: MUTE, lineHeight: 1.6 }}>
+              Telling an AI to ask first is only a request it can skip.{" "}
+              {BRAND_NAME} sits outside the AI, so spending and sending really do
+              stop until you approve. Every read and every request is recorded
+              for you to review.
+            </p>
+          </div>
+        </section>
+        </Reveal>
 
         {/* How it works */}
         <Reveal>
@@ -558,8 +580,8 @@ export default function LandingPage() {
         {/* Use cases */}
         <Reveal>
         <section className="py-12">
-          <SectionHeading sub="A few of the things people hand off, once their assistant knows them and asks before acting.">
-            What people use it for
+          <SectionHeading sub="What an assistant can take off your plate once it knows you — and the kind of action it has to stop and ask about first.">
+            What it's built for
           </SectionHeading>
           <div className="lp-stagger mt-10 grid gap-4 sm:grid-cols-2">
             {USE_CASES.map((u) => (
@@ -614,11 +636,11 @@ export default function LandingPage() {
         <Reveal>
         <section className="py-12">
           <div className="rounded-3xl px-6 py-16 sm:px-12" style={{ background: PANEL }}>
-            <SectionHeading sub="Seven sections, each visible only to who you choose.">
+            <SectionHeading sub="Organized into clean sections, each visible only to who you choose.">
               One place for everything an AI should know about you.
             </SectionHeading>
             <div className="lp-stagger mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {SECTION_KEYS.map((key) => (
+              {LANDING_SECTIONS.map((key) => (
                 <div key={key} className="lp-card rounded-2xl p-5" style={{ background: WHITE, border: `1px solid ${LINE}` }}>
                   <div className="text-[15px] font-semibold" style={{ color: INK }}>{SECTION_LABELS[key]}</div>
                   <p className="mt-1 text-sm" style={{ color: MUTE, lineHeight: 1.55 }}>{SECTION_HINTS[key]}</p>
@@ -677,26 +699,32 @@ Content-Type: application/json`}
             </div>
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <GhostLink href="https://github.com/AskGate/gate">View on GitHub</GhostLink>
-            <GhostLink href="/blog">Read the docs</GhostLink>
-          </div>
-        </section>
-        </Reveal>
+          <div className="mt-8 overflow-hidden rounded-2xl" style={{ background: WHITE, border: `1px solid ${LINE}` }}>
+            <div className="px-6 pt-6">
+              <h3 className="text-[15px] font-semibold" style={{ color: INK }}>What your agent receives</h3>
+              <p className="mt-2 text-[13px]" style={{ color: MUTE, lineHeight: 1.55 }}>
+                One <span style={{ fontFamily: MONO }}>get_context</span> call returns clean markdown — only the sections your token is scoped to read.
+              </p>
+            </div>
+            <pre className="mx-6 mb-6 mt-3 overflow-x-auto rounded-lg p-4 text-[12px] leading-relaxed" style={{ background: PANEL, color: INK, fontFamily: MONO }}>
+{`# yourhandle
 
-        {/* Reassurance */}
-        <Reveal>
-        <section className="py-24 sm:py-28">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="font-semibold" style={{ fontSize: "clamp(1.9rem, 4vw, 3rem)", letterSpacing: "-0.025em", lineHeight: 1.08 }}>
-              A prompt can be ignored. A permission check cannot.
-            </h2>
-            <p className="mx-auto mt-6 max-w-xl text-[17px]" style={{ color: MUTE, lineHeight: 1.6 }}>
-              Telling an AI to ask first is only a request it can skip.{" "}
-              {BRAND_NAME} sits outside the AI, so spending and sending really do
-              stop until you approve. Every read and every request is recorded
-              for you to review.
-            </p>
+## About
+Founder, two kids. Pacific Time. Reply briefly.
+
+## Scheduling
+Meetings 10:00-16:00 PT. Never Fridays.
+
+## Budget
+Auto-approve under $100. Ask above.
+
+- context served by ${BRAND_NAME} · claim yours at ${DOMAIN}`}
+            </pre>
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <GhostLink href="https://github.com/usegate/gate">View on GitHub</GhostLink>
+            <GhostLink href="/blog">Read the docs</GhostLink>
           </div>
         </section>
         </Reveal>
@@ -753,6 +781,13 @@ Content-Type: application/json`}
               <p className="mt-2" style={{ color: MUTE }}>
                 Let AI act for you. Keep the final say.
               </p>
+              <p className="mt-3 text-[13px]" style={{ color: MUTE, lineHeight: 1.5 }}>
+                Built by an ML engineer who runs autonomous agents daily and got
+                tired of hoping they&rsquo;d listen.{" "}
+                <a href="https://github.com/usegate/gate" className="underline" style={{ color: INK }}>
+                  GitHub
+                </a>
+              </p>
             </div>
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider" style={{ color: MUTE }}>Product</h4>
@@ -777,7 +812,7 @@ Content-Type: application/json`}
             </div>
           </div>
           <div className="mt-10 border-t pt-6" style={{ borderColor: LINE }}>
-            <p style={{ color: MUTE }}>&copy; 2025 {BRAND_NAME}. All rights reserved.</p>
+            <p style={{ color: MUTE }}>&copy; 2026 {BRAND_NAME}. All rights reserved.</p>
           </div>
         </div>
       </footer>
